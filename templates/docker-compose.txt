@@ -1,0 +1,42 @@
+version: '3'
+services:
+  web:
+    image: nginx:alpine
+    ports:
+      - "8888:80"
+    volumes:
+      - ../configurations/www:/usr/share/nginx/html:ro
+  dnsmasq:
+    image: andyshinn/dnsmasq
+    ports:
+      - "53:53/udp"
+      - "53:53"
+    cap_add:
+      - ALL
+      - NET_ADMIN
+    volumes:
+      - ../configurations/dnsmasq.conf:/etc/dnsmasq.conf
+  dhcpd:
+    image: networkboot/dhcpd
+    ports:
+      - "67:67/udp"
+      - "68:68/udp"
+    cap_add:
+      - ALL
+      - NET_ADMIN
+    volumes:
+      - ../configurations/dhcpd:/data
+    network_mode: host
+  haproxy:
+    image: haproxy:alpine
+    ports:
+      - "80:80"
+      - "443:443"
+      - "8404:8404"
+      - "2380:2380"
+      - "22623:22623"
+      - "6443:6443"
+    cap_add:
+      - ALL
+    volumes:
+      - ../configurations/haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg:ro

@@ -1,0 +1,6 @@
+jinja2
+pyaml
+cryptography
+requests
+docker-compose
+netaddr

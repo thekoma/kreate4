@@ -1,0 +1,64 @@
+global
+        daemon
+        maxconn 4000
+    defaults
+        mode tcp
+        timeout connect 5000ms
+        timeout client 50000ms
+        timeout server 50000ms
+    frontend stats
+        mode http
+        bind *:8404
+        stats enable
+        stats uri /stats
+        stats refresh 10s
+        stats auth admin:ocp
+        
+frontend machineconfig
+        bind *:22623
+        mode tcp
+        default_backend machineconfig_backend
+    backend machineconfig_backend
+        mode tcp
+{%- for bootstrap in nodes.bootstrap %}
+        server {{bootstrap.hostname}} {{bootstrap.ip}}:22623 maxconn 250 check
+{%- endfor %}
+{%- for master in nodes.master %}
+        server {{master.hostname}} {{master.ip}}:22623 maxconn 250 check
+{%- endfor %}
+    frontend api
+        bind *:6443
+        mode tcp
+        default_backend api_backend
+    backend api_backend
+        mode tcp
+{%- for bootstrap in nodes.bootstrap %}
+        server {{bootstrap.hostname}} {{bootstrap.ip}}:6443 maxconn 250 check
+{%- endfor %}
+{%- for master in nodes.master %}
+        server {{master.hostname}} {{master.ip}}:6443 maxconn 250 check
+{%- endfor %}
+    frontend http_infra
+        bind *:80
+        mode http
+        default_backend http_infra_backend
+    backend http_infra_backend
+        mode http
+{%- for infra in nodes.infra %}
+        server {{infra.hostname}} {{infra.ip}}:80 maxconn 250 check
+{%- endfor %}
+    frontend https_infra
+        bind *:443
+        mode tcp
+        default_backend https_infra_backend
+    backend https_infra_backend
+        mode tcp
+ {%- for infra in nodes.infra %}
+        server {{infra.hostname}} {{infra.ip}}:443 maxconn 250 check
+ {%- endfor %}
+    
+    backend etcd
+        mode tcp
+{%- for master in nodes.master %}
+        server etcd-{{loop.index - 1 }}.{{nodes.network.cluster}}.{{nodes.network.basedomain}} {{master.ip}}:6443 maxconn 250 check
+{%- endfor %}

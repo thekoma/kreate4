@@ -1,0 +1,89 @@
+---
+variable:
+  vcenter:
+    type: map
+    default:
+      host: vcenter_url
+      user: vcenter_user
+      password: vcenter_password
+      datacenter: datacenter_name
+      cluster: cluster_name
+      datastore: datastore_name
+      portgroup: portgroup_name
+      vm_folder: vm_datacenter_path
+      template: rhcos-4.2.0
+  general:
+    type: map
+    default:
+      host_count: 7 # This value should always be 7 unless you are doing tests
+  network:
+    type: map
+    default:
+      lb: "192.168.80.2" # This host IP will act as local DNS and DHCP and LoadBalancer
+      lb_int: ens192 # The interface where this ip is allocated
+      api: "192.168.80.2"
+      apiint: "192.168.80.3"
+      basedomain: ocplab.local
+      cluster: ocp01
+      subnet: "255.255.255.0"
+      gateway: "192.168.80.1"
+      network: "192.168.80.0"
+      dns: "192.168.80.1" #The real DNS for recursion
+      dhcp_pool_hi: "192.168.80.250"
+      dhcp_pool_low: "192.168.80.251"
+  vapps_options:
+    default:
+      master: DATA
+      infra: DATA
+      bootstrap: DATA
+  vm_list:
+    default:
+    - hostname: "bootstrap"
+      ip: "192.168.80.4"
+      mac_address: "00:50:56:3f:ff:e2"
+      type: "bootstrap"
+      cpu: 4
+      ram: 16384
+      disk: 60
+    - hostname: "master1"
+      ip: "192.168.80.101"
+      mac_address: "00:50:56:3f:ff:d3"
+      type: "master"
+      cpu: 4
+      ram: 16384
+      disk: 60
+    - hostname: "master2"
+      ip: "192.168.80.102"
+      mac_address: "00:50:56:3f:ff:d4"
+      type: "master"
+      cpu: 4
+      ram: 16384
+      disk: 60
+    - hostname: "master3"
+      ip: "192.168.80.103"
+      mac_address: "00:50:56:3f:ff:d5"
+      type: "master"
+      cpu: 4
+      ram: 16384
+      disk: 60
+    - hostname: "infra1"
+      ip: "192.168.80.111"
+      mac_address: "00:50:56:3f:ff:d6"
+      type: "infra"
+      cpu: 2
+      ram: 16384
+      disk: 60
+    - hostname: "infra2"
+      ip: "192.168.80.112"
+      mac_address: "00:50:56:3f:ff:d7"
+      type: "infra"
+      cpu: 2
+      ram: 16384
+      disk: 60
+    - hostname: "infra3"
+      ip: "192.168.80.113"
+      mac_address: "00:50:56:3f:ff:d8"
+      type: "infra"
+      cpu: 2
+      ram: 16384
+      disk: 60

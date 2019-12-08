@@ -1,0 +1,56 @@
+# dhcpd.conf
+#
+# Sample configuration file for ISC dhcpd
+#
+
+# option definitions common to all supported networks...
+option domain-name "lab01.ocplab.local";
+option domain-name-servers bastion.lab01.ocplab.local;
+
+default-lease-time 600;
+max-lease-time 7200;
+
+# Use this to enble / disable dynamic dns updates globally.
+#ddns-update-style none;
+
+# If this DHCP server is the official DHCP server for the local
+# network, the authoritative directive should be uncommented.
+authoritative;
+
+log-facility local7;
+dhcp-send-hostname;
+subnet {{nodes.network.network}} netmask {{nodes.network.subnet}} {
+  option domain-name-servers {{nodes.network.lb}};
+  option domain-name "{{nodes.network.cluster}}.{{nodes.network.basedomain}}";
+  option routers {{nodes.network.gateway}};
+  default-lease-time 600;
+  max-lease-time 7200;
+}
+
+host test {
+  hardware ethernet 00:50:56:a1:b2:6e;
+  fixed-address 192.168.80.4;
+  option host-name "test.ocp01.ocplab.local";
+}
+
+{%- for server in nodes.bootstrap %}
+host {{server.hostname}} {
+  hardware ethernet {{server.mac_address}};
+  fixed-address {{server.ip}};
+  option host-name "{{server.hostname}}.{{nodes.network.cluster}}.{{nodes.network.basedomain}}";
+}
+{%- endfor %}
+{%- for server in nodes.infra %}
+host {{server.hostname}} {
+  hardware ethernet {{server.mac_address}};
+  fixed-address {{server.ip}};
+  option host-name "{{server.hostname}}.{{nodes.network.cluster}}.{{nodes.network.basedomain}}";
+}
+{%- endfor %}
+{%- for server in nodes.master %}
+host {{server.hostname}} {
+  hardware ethernet {{server.mac_address}};
+  fixed-address {{server.ip}};
+  option host-name "{{server.hostname}}.{{nodes.network.cluster}}.{{nodes.network.basedomain}}";
+}
+{%- endfor %}

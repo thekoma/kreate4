@@ -1,0 +1,13 @@
+data/**
+daje/**
+bin/**
+.pyenv/**
+.*/**
+configurations/**
+terraform.tfstate
+!.gitignore
+cluster-*/**
+pull.json
+configuration.yaml
+**/terraform.tf.json
+**/.terraform/*
