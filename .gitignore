@@ -11,3 +11,4 @@ pull.json
 configuration.yaml
 **/terraform.tf.json
 **/.terraform/*
+terraform.tfstate.backup
