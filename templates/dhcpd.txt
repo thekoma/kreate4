@@ -4,9 +4,6 @@
 #
 
 # option definitions common to all supported networks...
-option domain-name "lab01.ocplab.local";
-option domain-name-servers bastion.lab01.ocplab.local;
-
 default-lease-time 600;
 max-lease-time 7200;
 

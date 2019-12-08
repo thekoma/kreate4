@@ -27,6 +27,13 @@ Disable the firewall (it's a lab)
 systemctl disable --now firewalld
 ```
 
+Install terraform
+```
+wget https://releases.hashicorp.com/terraform/0.12.17/terraform_0.12.17_linux_amd64.zip
+unzip ./terraform_0.12.17_linux_amd64.zip –d /usr/local/bin
+chmod +x /usr/local/bin/terraform
+```
+
 Install the required libraries
 ```bash
 python3 -m venv .myenv
