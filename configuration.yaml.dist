@@ -29,8 +29,6 @@ variable:
       gateway: "192.168.80.1"
       network: "192.168.80.0"
       dns: "192.168.80.1" #The real DNS for recursion
-      dhcp_pool_hi: "192.168.80.250"
-      dhcp_pool_low: "192.168.80.251"
   vapps_options:
     default:
       master: DATA

@@ -41,6 +41,12 @@ resource "vsphere_folder" "folder" {
   datacenter_id = data.vsphere_datacenter.dc.id
 }
 
+resource "vsphere_folder" "folder" {
+  path          = var.vcenter["cluster"]
+  type          = "datastore"
+  datacenter_id = data.vsphere_datacenter.dc.id
+}
+
 resource "vsphere_virtual_machine" "vm" {
   depends_on                = [vsphere_folder.folder]
   name                       = "${var.vm_list[count.index].hostname}.${var.network.cluster}.${var.network.basedomain}"
