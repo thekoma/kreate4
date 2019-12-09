@@ -12,6 +12,7 @@ Requirements:
 - You need a bastion (infrastructure) host where you'll run this script and that will be the dhcp and dns server for the network
 - You need to run the script as root or as sudo (NO_PASSWD) user.
 - You need 2 IP for the haproxy (one is your bastion ip the second is any in the same network).
+- You need to forward the zone `${your_cluster_name}.fqdn` to the basstion machine as it will operate as authoritative dns.
 
 ## Execution:
 
