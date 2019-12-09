@@ -48,11 +48,13 @@ pull_auth               = "pull.json"
 bin_dir                 = "bin"
 tmp_dir                 = "/tmp/ocp_dld"
 template_dir            = "templates"
+docker_proxy_dir        = "/etc/systemd/system/docker.service.d/"
+docker_proxy_tpl        = "docker_proxy.txt"
 haproxy_tpl             = "haproxy.txt"
 dhcpd_tpl               = "dhcpd.txt"
 dnsmasq_tpl             = "dnsmasq.txt"
 docker_compose_tpl      = "docker-compose.txt"
-vphsere_terraform_vars  = 'terraform/modules/vsphere/terraform.tf.json'
+vphsere_terraform_vars  = 'terraform/terraform.tf.json'
 ocp_client_dld          = 'client.tgz'
 ocp_installer_dld       = 'install.tgz'
 bootstrap_filename      = "bootstrap.ign"
@@ -72,6 +74,7 @@ append_bootstrap_tpl    = "%s/append-bootstrap.ign"              % (template_dir
 ocp_client_url          = "%s/openshift-client-linux-%s.tar.gz"  % (ocp_base_url, ocp_target_version)
 ocp_installer_url       = "%s/openshift-install-linux-%s.tar.gz" % (ocp_base_url, ocp_target_version)
 bootstrap_path          = "%s/bootstrap.ign"                     % (ocp_web_path)
+docker_proxy_conf       = "%s/http-proxy.conf"                   % (docker_proxy_dir)
 basedirs                = [bin_dir, configuration_dir, dhcpd_dir] #Tmp dir treated differently.
 
 
@@ -92,14 +95,18 @@ lb_int                  = networks_info.get('lb_int')
 apiintip                = networks_info.get('apiint')
 subnet                  = networks_info.get('subnet')
 ocp_clustername         = networks_info.get('cluster')
-ocp_work_path           = "cluster-%s"              % (ocp_clustername)
-master_ignition         = "%s/master.ign"           % (ocp_work_path)
-infra_ignition          = "%s/worker.ign"           % (ocp_work_path)
-bootstrap_ignition      = "%s/%s"                   % (ocp_work_path, bootstrap_filename)
-
-ocp_dir_param           = "--dir=%s"                % (ocp_work_path)
-ocp_install_config_file = "%s/install-config.yaml"  % (ocp_work_path)
-append_bootstrap_url    ="http://%s:8888/%s"        % (lb, bootstrap_filename)
+use_proxy               = networks_info.get('use_proxy')
+http_proxy              = networks_info.get('http_proxy')
+https_proxy             = networks_info.get('https_proxy')
+no_proxy                = networks_info.get('no_proxy')
+readiness_proxy         = networks_info.get('readiness_proxy')
+ocp_work_path           = "cluster-%s"                      % (ocp_clustername)
+master_ignition         = "%s/master.ign"                   % (ocp_work_path)
+infra_ignition          = "%s/worker.ign"                   % (ocp_work_path)
+bootstrap_ignition      = "%s/%s"                           % (ocp_work_path, bootstrap_filename)
+ocp_dir_param           = "--dir=%s"                        % (ocp_work_path)
+ocp_install_config_file = "%s/install-config.yaml"          % (ocp_work_path)
+append_bootstrap_url    ="http://%s:8888/%s"                % (lb, bootstrap_filename)
 
 ###########################################################################################################
 # Functions
@@ -206,9 +213,18 @@ def render_install_config():
     install_config['platform']['vsphere']['vcenter']            = confs['variable']['vcenter']['default'].get('host')
     install_config['pullSecret']                                = pull_json
     install_config['metadata']['name']                          = confs['variable']['network']['default'].get('cluster')
+    if use_proxy:
+        install_config['proxy']                                 = {}
+        install_config['proxy']['httpProxy']                    = http_proxy
+        install_config['proxy']['httpsProxy']                   = https_proxy
+        install_config['proxy']['noProxy']                      = no_proxy
 
     with open(install_config_file, 'w') as f:
         yaml.dump(install_config, f, default_flow_style=False)
+
+    with open('install-config.yaml', 'w') as f:
+        yaml.dump(install_config, f, default_flow_style=False)  
+
     print("done")
 
 def create_terraform_vars():
@@ -340,14 +356,38 @@ def prepare_web_path():
     copyfile(bootstrap_ignition, bootstrap_path)
 
 def build_compose_tpl():
-    # For now is useless.. but maybe some day....
     nodes=build_node_var()
+    # For now is useless.. but maybe some day....
     file_loader = FileSystemLoader(template_dir)
     env = Environment(loader=file_loader)
     template = env.get_template(docker_compose_tpl)
     output = template.render(nodes=nodes)
     with open(dockercompose, 'w') as f:
         f.write(output)
+
+def create_proxy_docker():
+    nodes=build_node_var()
+    if use_proxy:
+        if not os.path.exists(docker_proxy_dir):
+            subprocess.run(['sudo', 'mkdir', '-p', docker_proxy_dir])
+            
+        # For now is useless.. but maybe some day....
+        file_loader = FileSystemLoader(template_dir)
+        env = Environment(loader=file_loader)
+        template = env.get_template(docker_proxy_tpl)
+        output = template.render(nodes=nodes)
+        docker_proxy_tmp_dir="%s/http_docker_proxy.conf" % (tmp_dir)
+        with open(docker_proxy_tmp_dir, 'w') as f:
+            f.write(output)
+        subprocess.run(['sudo', 'cp', '-f', docker_proxy_tmp_dir, docker_proxy_conf]) 
+        subprocess.run(['sudo', 'systemctl', 'daemon-reload']) 
+        subprocess.run(['sudo', 'systemctl', 'restart', 'docker']) 
+    else:
+        if os.path.exists(docker_proxy_conf):
+            subprocess.run(['sudo', 'rm', '-ft', docker_proxy_dir])
+            subprocess.run(['sudo', 'systemctl', 'aemon-reload']) 
+            subprocess.run(['sudo', 'systemctl', 'restart', 'docker']) 
+
 
 def run_compose():
     build_compose_tpl()
@@ -375,6 +415,7 @@ def start_bootstrapper():
 
 
 def main():
+    create_proxy_docker()
     download_tools()
     new_ssh_key()
     render_install_config()

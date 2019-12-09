@@ -1,3 +1,10 @@
+variable "vcenter" {} 
+variable "general" {} 
+variable "network" {} 
+variable "vapps_options" {} 
+variable "vm_list" {} 
+variable "host_counter" {}
+
 provider "vsphere" {
   user           = var.vcenter["user"]
   password       = var.vcenter["password"]
@@ -63,8 +70,7 @@ resource "vsphere_virtual_machine" "vm" {
   //This is wrong but  you know.. lab 
   latency_sensitivity        = "normal" 
   scsi_type                  = data.vsphere_virtual_machine.template.scsi_type
-
-  count = var.general["host_count"]
+  count = var.host_counter
 
   network_interface {
     network_id     = data.vsphere_network.network.id

@@ -13,3 +13,4 @@ configuration.yaml
 **/.terraform/*
 terraform.tfstate.backup
 .terraform.tfstate.lock.info
+install-config.yaml
