@@ -13,6 +13,6 @@ module "pdns" {
   vcenter=var.vcenter
   host_counter=var.host_count
   network=var.network
-  vapps_options=var.vapps_options
   vm_list=var.vm_list
+  pdns=var.pdns
 }

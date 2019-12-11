@@ -20,6 +20,7 @@ from shutil import copyfile
 import base64
 import ipaddress
 from netaddr import IPAddress
+import re
 
 def create_if_not_exist(thedir):
     if not os.path.exists(thedir):
@@ -260,19 +261,23 @@ def render_dnsmasq_cfg(nodes):
     
     loop=0
     kinds=['infra', 'master', 'bootstrap']
+    masters={}
     for kind in kinds:
         loop=0
         for key in nodes[kind]:
+            if kind == 'master':
+                masters[loop]=nodes[kind][loop]
+                masters[loop]['etcd']="etcd-%s.ocp02.ocplab.gcio.unicredit.eu" % loop
             ip=key['ip']
             nodes[kind][loop]['reverse'] = ipaddress.ip_address(ip).reverse_pointer
             loop=loop+1
     network_z                               = nodes['network']['network'] 
-    nodes['network']['zone_reverse']        = re.sub(r"^[0-9]{1,3}\.", '', ipaddress.ip_address(network_z).reverse_pointer,)network
+    nodes['network']['zone_reverse']        = re.sub(r"^[0-9]{1,3}\.", '', ipaddress.ip_address(network_z).reverse_pointer,)
     nodes['network']['api_reverse']         = ipaddress.ip_address(nodes['network']['api']).reverse_pointer
     nodes['network']['apiint_reverse']      = ipaddress.ip_address(nodes['network']['apiint']).reverse_pointer
     file_loader = FileSystemLoader(template_dir)
     env = Environment(loader=file_loader)
-
+    confs[masters] = masters
     template = env.get_template(dnsmasq_tpl)
     output = template.render(nodes=nodes)
     with open(dnsmasq_cfg, 'w') as f:
@@ -432,6 +437,6 @@ def main():
     set_ip()
     run_compose()
     set_dns()
-    create_machines()
-    start_bootstrapper()
+#    create_machines()
+#    start_bootstrapper()
 main()

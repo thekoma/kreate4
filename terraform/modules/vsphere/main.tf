@@ -48,7 +48,7 @@ resource "vsphere_folder" "folder" {
 }
 
 resource "vsphere_folder" "datastore_folder" {
-  path          = var.vcenter["cluster"]
+  path          = var.vcenter["datastore_folder"]
   type          = "datastore"
   datacenter_id = data.vsphere_datacenter.dc.id
 }

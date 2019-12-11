@@ -18,7 +18,7 @@ resource "powerdns_zone" "LAB" {
 }
 
 resource "powerdns_zone" "PTR" {
-  name    = "${var.network.cluster}.${var.network.zone_reverse}."
+  name    = "${var.network.zone_reverse}."
   kind    = "Native"
   nameservers = [ var.pdns.name ]
 }
@@ -29,15 +29,16 @@ resource "powerdns_record" "record_A" {
   name    = "${var.vm_list[count.index].hostname}.${var.network.cluster}.${var.network.basedomain}."
   type    = "A"
   ttl     = 300
-  records = ["${var.vm_list[count.index].ip}.${var.network.cluster}.${var.network.basedomain}"]
+  records = ["${var.vm_list[count.index].ip}"]
   count = var.host_counter
 }
 
 
 resource "powerdns_record" "record_PTR" {
-  zone    = "${var.network.cluster}.${var.network.zone_reverse}."
-  name    = "${var.vm_list[count.index].reverse}.${var.network.cluster}.${var.network.basedomain}."
+  zone    = "${var.network.zone_reverse}."
+  name    = "${var.vm_list[count.index].reverse}."
   type    = "PTR"
   ttl     = 300
   records = ["${var.vm_list[count.index].hostname}.${var.network.cluster}.${var.network.basedomain}."]
+  count = var.host_counter
 }

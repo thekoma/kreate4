@@ -6,16 +6,16 @@ services:
       - "8888:80"
     volumes:
       - ../configurations/www:/usr/share/nginx/html:ro
-  dnsmasq:
-    image: andyshinn/dnsmasq
-    ports:
-      - "53:53/udp"
-      - "53:53"
-    cap_add:
-      - ALL
-      - NET_ADMIN
-    volumes:
-      - ../configurations/dnsmasq.conf:/etc/dnsmasq.conf
+#  dnsmasq:
+#    image: andyshinn/dnsmasq
+#    ports:
+#      - "53:53/udp"
+#      - "53:53"
+#    cap_add:
+#      - ALL
+#      - NET_ADMIN
+#    volumes:
+#      - ../configurations/dnsmasq.conf:/etc/dnsmasq.conf
   dhcpd:
     image: networkboot/dhcpd
     ports:
