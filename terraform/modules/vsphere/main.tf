@@ -1,5 +1,4 @@
 variable "vcenter" {} 
-variable "general" {} 
 variable "network" {} 
 variable "vapps_options" {} 
 variable "vm_list" {} 

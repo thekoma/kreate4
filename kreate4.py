@@ -266,7 +266,8 @@ def render_dnsmasq_cfg(nodes):
             ip=key['ip']
             nodes[kind][loop]['reverse'] = ipaddress.ip_address(ip).reverse_pointer
             loop=loop+1
-
+    network_z                               = nodes['network']['network'] 
+    nodes['network']['zone_reverse']        = re.sub(r"^[0-9]{1,3}\.", '', ipaddress.ip_address(network_z).reverse_pointer,)network
     nodes['network']['api_reverse']         = ipaddress.ip_address(nodes['network']['api']).reverse_pointer
     nodes['network']['apiint_reverse']      = ipaddress.ip_address(nodes['network']['apiint']).reverse_pointer
     file_loader = FileSystemLoader(template_dir)
