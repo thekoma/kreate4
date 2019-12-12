@@ -1,48 +1,5 @@
 server={{nodes.network.dns}}
-
-# Record A Servizi
-address=/.apps.{{nodes.network.cluster}}.{{nodes.network.basedomain}}/{{nodes.network.lb}}
-address=/api.{{nodes.network.cluster}}.{{nodes.network.basedomain}}/{{nodes.network.api}}
-address=/api-int.{{nodes.network.cluster}}.{{nodes.network.basedomain}}/{{nodes.network.apiint}}
-address=/bastion.{{nodes.network.cluster}}.{{nodes.network.basedomain}}/{{nodes.network.lb}}
-
-# Record A Nodi
-{%- for bootstrap in nodes.bootstrap %}
-address=/{{bootstrap.hostname}}.{{nodes.network.cluster}}.{{nodes.network.basedomain}}/{{bootstrap.ip}}
-{%- endfor %}
-{%- for master in nodes.master %}
-address=/{{master.hostname}}.{{nodes.network.cluster}}.{{nodes.network.basedomain}}/{{master.ip}}
-{%- endfor %}
-{%- for infra in nodes.infra %}
-address=/{{infra.hostname}}.{{nodes.network.cluster}}.{{nodes.network.basedomain}}/{{infra.ip}}
-{%- endfor %}
-
-# ETCD
-{%- for master in nodes.master %}
-address=/etcd-{{loop.index - 1 }}.{{nodes.network.cluster}}.{{nodes.network.basedomain}}/{{master.ip}}
-{%- endfor %}
-
-# SRV
-{%- for master in nodes.master %}
-srv-host=_etcd-server-ssl._tcp.{{nodes.network.cluster}}.{{nodes.network.basedomain}},etcd-{{loop.index - 1 }}.{{nodes.network.cluster}}.{{nodes.network.basedomain}},2380,0,10
-{%- endfor %}
-
-# PTR
-{%- for server in nodes.bootstrap %}
-ptr-record={{server.reverse}},{{server.hostname}}.{{nodes.network.cluster}}.{{nodes.network.basedomain}}
-{%- endfor %}
-{%- for server in nodes.master %}
-ptr-record={{server.reverse}},{{server.hostname}}.{{nodes.network.cluster}}.{{nodes.network.basedomain}}
-{%- endfor %}
-{%- for server in nodes.infra %}
-ptr-record={{server.reverse}},{{server.hostname}}.{{nodes.network.cluster}}.{{nodes.network.basedomain}}
-{%- endfor %}
-ptr-record={{nodes.network.api_reverse}},api.{{nodes.network.cluster}}.{{nodes.network.basedomain}}
-ptr-record={{nodes.network.apiint_reverse}},api-int.{{nodes.network.cluster}}.{{nodes.network.basedomain}}
-
-
-# Record A Servizi
-address=/.apps.{{nodes.network.cluster}}.{{nodes.network.basedomain}}/{{nodes.network.lb}}
-address=/api.{{nodes.network.cluster}}.{{nodes.network.basedomain}}/{{nodes.network.lb}}
-address=/api-int.{{nodes.network.cluster}}.{{nodes.network.basedomain}}/{{nodes.network.lb}}
-address=/bastion.{{nodes.network.cluster}}.{{nodes.network.basedomain}}/{{nodes.network.lb}}
+server=/{{nodes.network.basedomain}}/127.0.0.53
+server=/{{nodes.network.zone_reverse}}/127.0.0.53
+no-daemon
+log-queries

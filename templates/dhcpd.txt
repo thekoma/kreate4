@@ -24,11 +24,6 @@ subnet {{nodes.network.network}} netmask {{nodes.network.subnet}} {
   max-lease-time 7200;
 }
 
-host test {
-  hardware ethernet 00:50:56:a1:b2:6e;
-  fixed-address 192.168.80.4;
-  option host-name "test.ocp01.ocplab.local";
-}
 
 {%- for server in nodes.bootstrap %}
 host {{server.hostname}} {

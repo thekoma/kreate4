@@ -6,16 +6,6 @@ services:
       - "8888:80"
     volumes:
       - ../configurations/www:/usr/share/nginx/html:ro
-#  dnsmasq:
-#    image: andyshinn/dnsmasq
-#    ports:
-#      - "53:53/udp"
-#      - "53:53"
-#    cap_add:
-#      - ALL
-#      - NET_ADMIN
-#    volumes:
-#      - ../configurations/dnsmasq.conf:/etc/dnsmasq.conf
   dhcpd:
     image: networkboot/dhcpd
     ports:
@@ -40,3 +30,64 @@ services:
       - ALL
     volumes:
       - ../configurations/haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg:ro
+  pdnsadmin:
+    image: ngoduykhanh/powerdns-admin:latest
+    container_name: powerdns_admin
+    restart: always
+    ports:
+      - "8880:80"
+    environment:
+      - SQLALCHEMY_DATABASE_URI=mysql://pdns:pdns@mysqlpdnsadmin/pdns
+      - GUINCORN_TIMEOUT=60
+      - GUNICORN_WORKERS=2
+      - GUNICORN_LOGLEVEL=DEBUG
+    depends_on:
+      - mysqlpdnsadmin
+      - mysqlpdns
+      - pdns
+
+  mysqlpdnsadmin:
+    image:  mariadb:10.1
+    restart: always
+    environment:
+      - MYSQL_ROOT_PASSWORD=pdns
+      - MYSQL_DATABASE=pdns
+      - MYSQL_USER=pdns
+      - MYSQL_PASSWORD=pdns
+    volumes:
+      - ../configurations/mysql_pdns:/var/lib/mysql
+  mysqlpdns:
+    image:  mariadb:10.1
+    restart: always
+    environment:
+      - MYSQL_ROOT_PASSWORD=pdns
+      - MYSQL_DATABASE=pdns
+      - MYSQL_USER=pdns
+      - MYSQL_PASSWORD=pdns
+    volumes:
+      - ../configurations/mysql_pdnsadmin:/var/lib/mysql
+  pdns:
+    image: koma85/unbound:latest
+    restart: always
+    ports:
+      - "53:53/udp"
+      - "53:53/tcp"
+      - "5353:5353/udp"
+      - "5353:5353/tcp"
+      - "8081:8081/tcp"
+    environment:
+      - MYSQL_USER=pdns
+      - MYSQL_PASS=pdns
+      - MYSQL_HOST=mysqlpdns
+    command:
+      - "--cache-ttl=120"
+      - "--api"
+      - "--api-key=changeme"
+      - "--webserver-allow-from=0.0.0.0/0"
+      - "--webserver-address=0.0.0.0"
+      - "--local-port=5353"
+    depends_on:
+      - mysqlpdns
+    volumes:
+      - ../configurations/unbound.conf:/etc/unbound/unbound.conf
+      - ../configurations/mysql_pdnsadmin:/var/lib/mysql

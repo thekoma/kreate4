@@ -1,0 +1,42 @@
+server:
+        interface: 0.0.0.0
+        verbosity: 5
+        val-permissive-mode: yes
+        module-config: "iterator"
+        root-hints: /usr/share/dns-root-hints/named.root
+        do-not-query-localhost: no
+        trust-anchor-file: "/usr/share/dnssec-root/trusted-key.key"
+        access-control: 0.0.0.0/0 allow
+        local-zone: "10.in-addr.arpa." nodefault
+        local-zone: "16.172.in-addr.arpa." nodefault
+        local-zone: "17.172.in-addr.arpa." nodefault
+        local-zone: "18.172.in-addr.arpa." nodefault
+        local-zone: "19.172.in-addr.arpa." nodefault
+        local-zone: "20.172.in-addr.arpa." nodefault
+        local-zone: "21.172.in-addr.arpa." nodefault
+        local-zone: "22.172.in-addr.arpa." nodefault
+        local-zone: "23.172.in-addr.arpa." nodefault
+        local-zone: "24.172.in-addr.arpa." nodefault
+        local-zone: "25.172.in-addr.arpa." nodefault
+        local-zone: "26.172.in-addr.arpa." nodefault
+        local-zone: "27.172.in-addr.arpa." nodefault
+        local-zone: "28.172.in-addr.arpa." nodefault
+        local-zone: "29.172.in-addr.arpa." nodefault
+        local-zone: "30.172.in-addr.arpa." nodefault
+        local-zone: "31.172.in-addr.arpa." nodefault
+        local-zone: "168.192.in-addr.arpa." nodefault 
+
+python:
+remote-control:
+stub-zone:
+    name: "{{nodes.network.cluster}}.{{nodes.network.basedomain}}"
+    stub-addr: 127.0.0.1@5353  # An Unbound server with a single catchall 
+
+stub-zone:
+    name: "{{nodes.network.zone_reverse}}"
+    stub-addr: 127.0.0.1@5353  # An Unbound server with a single catchall 
+
+forward-zone:
+    name: "."
+    forward-addr: {{nodes.network.dns}}  # An Unbound server with a single catchall 
+    forward-first: no

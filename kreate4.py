@@ -21,6 +21,8 @@ import base64
 import ipaddress
 from netaddr import IPAddress
 import re
+import requests
+import time
 
 def create_if_not_exist(thedir):
     if not os.path.exists(thedir):
@@ -53,7 +55,7 @@ docker_proxy_dir        = "/etc/systemd/system/docker.service.d/"
 docker_proxy_tpl        = "docker_proxy.txt"
 haproxy_tpl             = "haproxy.txt"
 dhcpd_tpl               = "dhcpd.txt"
-dnsmasq_tpl             = "dnsmasq.txt"
+unbound_tpl             = "unbound.txt"
 docker_compose_tpl      = "docker-compose.txt"
 vphsere_terraform_vars  = 'terraform/terraform.tf.json'
 ocp_client_dld          = 'client.tgz'
@@ -63,7 +65,7 @@ configuration_dir       = "configurations"
 ocp_web_path            = "%s/www"                               % (configuration_dir)
 dhcpd_dir               = "%s/dhcpd"                             % (configuration_dir)
 dockercompose           = "%s/docker-compose.yaml"               % (configuration_dir)
-dnsmasq_cfg             = "%s/dnsmasq.conf"                      % (configuration_dir)
+unbound_cfg             = "%s/unbound.conf"                      % (configuration_dir)
 haproxy_cfg             = "%s/haproxy.cfg"                       % (configuration_dir)
 ssh_priv                = "%s/private.key"                       % (configuration_dir)
 ssh_pub                 = "%s/public.key"                        % (configuration_dir)
@@ -91,6 +93,9 @@ with open(install_config_tpl) as info:
 with open(pull_auth, 'r') as myfile:
     pull_json=myfile.read().replace('\n', '')
 networks_info           = confs['variable']['network']['default']
+pdns_host               = confs['variable']['pdns']['default'].get('host')
+pdns_url                = "%s/api" % pdns_host
+pdns_key                = confs['variable']['pdns']['default'].get('key')
 lb                      = networks_info.get('lb')
 lb_int                  = networks_info.get('lb_int')
 apiintip                = networks_info.get('apiint')
@@ -230,6 +235,11 @@ def render_install_config():
 
 def create_terraform_vars():
     print("Creating terraform vars for vsphere...\t\t", end='')
+    ndz=build_node_var()
+    etcd=ndz['master']
+    confs['variable']['etcd']={}
+    confs['variable']['etcd']['default']=etcd
+
     with open(vphsere_terraform_vars, 'w') as fp:
         json.dump(confs, fp)
     print("done")
@@ -256,33 +266,27 @@ def render_dhcpd_cfg(nodes):
         f.write(output)
     print("done")
 
-def render_dnsmasq_cfg(nodes):
-    print("Rendering dnsmasq configuration template...\t", end='')
+def render_unbound_cfg(nodes):
+    print("Rendering unbound configuration template...\t", end='')
     
     loop=0
     kinds=['infra', 'master', 'bootstrap']
-    masters={}
+    nodes['masters']={}
     for kind in kinds:
         loop=0
         for key in nodes[kind]:
-            if kind == 'master':
-                masters[loop]=nodes[kind][loop]
-                masters[loop]['etcd']="etcd-%s.ocp02.ocplab.gcio.unicredit.eu" % loop
             ip=key['ip']
             nodes[kind][loop]['reverse'] = ipaddress.ip_address(ip).reverse_pointer
             loop=loop+1
-    network_z                               = nodes['network']['network'] 
-    nodes['network']['zone_reverse']        = re.sub(r"^[0-9]{1,3}\.", '', ipaddress.ip_address(network_z).reverse_pointer,)
-    nodes['network']['api_reverse']         = ipaddress.ip_address(nodes['network']['api']).reverse_pointer
-    nodes['network']['apiint_reverse']      = ipaddress.ip_address(nodes['network']['apiint']).reverse_pointer
+
     file_loader = FileSystemLoader(template_dir)
     env = Environment(loader=file_loader)
-    confs[masters] = masters
-    template = env.get_template(dnsmasq_tpl)
+    template = env.get_template(unbound_tpl)
     output = template.render(nodes=nodes)
-    with open(dnsmasq_cfg, 'w') as f:
+    with open(unbound_cfg, 'w') as f:
         f.write(output)
     print("done")
+
 
 def build_node_var():
     print("Building node list...\t\t\t", end='')
@@ -300,6 +304,10 @@ def build_node_var():
         elif elem['type'] == 'bootstrap':
             bootstrap_nodes.append(elem)
     nodes=dict([('infra',infra_nodes),('master',master_nodes),('bootstrap',bootstrap_nodes),('network',net_info)])
+    network_z                               = nodes['network']['network'] 
+    nodes['network']['zone_reverse']        = re.sub(r"^[0-9]{1,3}\.", '', ipaddress.ip_address(network_z).reverse_pointer,)
+    nodes['network']['api_reverse']         = ipaddress.ip_address(nodes['network']['api']).reverse_pointer
+    nodes['network']['apiint_reverse']      = ipaddress.ip_address(nodes['network']['apiint']).reverse_pointer
     return nodes
     print("done")
 
@@ -308,7 +316,8 @@ def extract_machines():
     nodes=build_node_var()
     render_dhcpd_cfg(nodes)
     render_haproxy_cfg(nodes)
-    render_dnsmasq_cfg(nodes)
+    render_unbound_cfg(nodes)
+
 
 def create_manifests():
     print("Creating manifest")
@@ -419,6 +428,21 @@ def create_machines():
 def start_bootstrapper():
     subprocess.run([ocp_install, ocp_dir_param, 'wait-for', 'bootstrap-complete', '--log-level=info']) 
 
+def wait_for_powerdns():
+    print("Waiting for PowerDNS API ", end='')
+    while True:
+        print(".", end='')
+        s = requests.Session()
+        s.headers.update({"X-API-Key":pdns_key})
+        try:           
+            r=s.get(pdns_url)
+            if r.status_code == 200:
+                break
+            else:
+                time.sleep( .5 )
+        except:
+            time.sleep( .5 )
+    print(" done.")
 
 def main():
     create_proxy_docker()
@@ -436,7 +460,8 @@ def main():
     prepare_web_path()
     set_ip()
     run_compose()
+    wait_for_powerdns()
     set_dns()
-#    create_machines()
-#    start_bootstrapper()
+    create_machines()
+    start_bootstrapper()
 main()

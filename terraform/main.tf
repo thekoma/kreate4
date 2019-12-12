@@ -15,4 +15,5 @@ module "pdns" {
   network=var.network
   vm_list=var.vm_list
   pdns=var.pdns
+  etcd=var.etcd
 }

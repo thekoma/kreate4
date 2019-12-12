@@ -69,6 +69,7 @@ resource "vsphere_virtual_machine" "vm" {
   //This is wrong but  you know.. lab 
   latency_sensitivity        = "normal" 
   scsi_type                  = data.vsphere_virtual_machine.template.scsi_type
+  #count = 0
   count = var.host_counter
 
   network_interface {
