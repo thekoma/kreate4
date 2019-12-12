@@ -1,5 +1,9 @@
 ---
 variable:
+  host_count: 
+    default: 7
+  target_version: 
+    default: 4.2.9
   vcenter:
     type: map
     default:
@@ -12,10 +16,6 @@ variable:
       portgroup: portgroup_name
       vm_folder: vm_datacenter_path
       template: rhcos-4.2.0
-  general:
-    type: map
-    default:
-      host_count: 7 # This value should always be 7 unless you are doing tests
   network:
     type: map
     default:

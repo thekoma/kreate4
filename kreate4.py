@@ -44,8 +44,6 @@ global pull_json
 
 ###########################################################################################################
 
-ocp_target_version      = "4.2.9"
-ocp_base_url            = "https://mirror.openshift.com/pub/openshift-v4/clients/ocp/latest"
 vsphere_cfg             = "configuration.yaml"
 pull_auth               = "pull.json"
 bin_dir                 = "bin"
@@ -58,8 +56,7 @@ dhcpd_tpl               = "dhcpd.txt"
 unbound_tpl             = "unbound.txt"
 docker_compose_tpl      = "docker-compose.txt"
 vphsere_terraform_vars  = 'terraform/terraform.tf.json'
-ocp_client_dld          = 'client.tgz'
-ocp_installer_dld       = 'install.tgz'
+
 bootstrap_filename      = "bootstrap.ign"
 configuration_dir       = "configurations"
 ocp_web_path            = "%s/www"                               % (configuration_dir)
@@ -74,8 +71,6 @@ ocp_install             = "%s/openshift-install"                 % (bin_dir)
 dhcpd_cfg               = "%s/dhcpd.conf"                        % (dhcpd_dir)
 install_config_tpl      = "%s/install-config.txt"                % (template_dir)
 append_bootstrap_tpl    = "%s/append-bootstrap.ign"              % (template_dir)
-ocp_client_url          = "%s/openshift-client-linux-%s.tar.gz"  % (ocp_base_url, ocp_target_version)
-ocp_installer_url       = "%s/openshift-install-linux-%s.tar.gz" % (ocp_base_url, ocp_target_version)
 bootstrap_path          = "%s/bootstrap.ign"                     % (ocp_web_path)
 docker_proxy_conf       = "%s/http-proxy.conf"                   % (docker_proxy_dir)
 basedirs                = [tmp_dir, bin_dir, configuration_dir, dhcpd_dir] #Tmp dir treated differently.
@@ -96,6 +91,7 @@ networks_info           = confs['variable']['network']['default']
 pdns_host               = confs['variable']['pdns']['default'].get('host')
 pdns_url                = "%s/api" % pdns_host
 pdns_key                = confs['variable']['pdns']['default'].get('key')
+ocp_target_version      = confs['variable']['target_version'].get('default')
 dns                     = networks_info.get('dns')
 lb                      = networks_info.get('lb')
 lb_int                  = networks_info.get('lb_int')
@@ -107,13 +103,19 @@ http_proxy              = networks_info.get('http_proxy')
 https_proxy             = networks_info.get('https_proxy')
 no_proxy                = networks_info.get('no_proxy')
 readiness_proxy         = networks_info.get('readiness_proxy')
-ocp_work_path           = "cluster-%s"                      % (ocp_clustername)
-master_ignition         = "%s/master.ign"                   % (ocp_work_path)
-infra_ignition          = "%s/worker.ign"                   % (ocp_work_path)
-bootstrap_ignition      = "%s/%s"                           % (ocp_work_path, bootstrap_filename)
-ocp_dir_param           = "--dir=%s"                        % (ocp_work_path)
-ocp_install_config_file = "%s/install-config.yaml"          % (ocp_work_path)
-append_bootstrap_url    ="http://%s:8888/%s"                % (lb, bootstrap_filename)
+ocp_work_path           = "cluster-%s"                                                      % (ocp_clustername)
+master_ignition         = "%s/master.ign"                                                   % (ocp_work_path)
+infra_ignition          = "%s/worker.ign"                                                   % (ocp_work_path)
+bootstrap_ignition      = "%s/%s"                                                           % (ocp_work_path, bootstrap_filename)
+ocp_dir_param           = "--dir=%s"                                                        % (ocp_work_path)
+ocp_install_config_file = "%s/install-config.yaml"                                          % (ocp_work_path)
+append_bootstrap_url    = "http://%s:8888/%s"                                               % (lb, bootstrap_filename)
+ocp_client_dld          = 'client-%s.tgz'                                                   % (ocp_target_version)
+ocp_installer_dld       = 'install-%s.tgz'                                                  % (ocp_target_version)
+ocp_base_url            = "https://mirror.openshift.com/pub/openshift-v4/clients/ocp/%s"    % (ocp_target_version)
+ocp_client_url          = "%s/openshift-client-linux-%s.tar.gz"                             % (ocp_base_url, ocp_target_version)
+ocp_installer_url       = "%s/openshift-install-linux-%s.tar.gz"                            % (ocp_base_url, ocp_target_version)
+
 
 ###########################################################################################################
 # Functions
@@ -448,21 +450,21 @@ def wait_for_powerdns():
 def main():
     create_proxy_docker()
     download_tools()
-    new_ssh_key()
-    render_install_config()
-    extract_machines()
-    create_manifests()
-    modify_manifest()
-    create_ignition()
-    create_bootstrap_ignition()
-    create_master_ignition()
-    create_infra_ignition()
-    create_terraform_vars()
-    prepare_web_path()
-    set_ip()
-    run_compose()
-    wait_for_powerdns()
-    set_dns()
-    create_machines()
-    start_bootstrapper()
+    # new_ssh_key()
+    # render_install_config()
+    # extract_machines()
+    # create_manifests()
+    # modify_manifest()
+    # create_ignition()
+    # create_bootstrap_ignition()
+    # create_master_ignition()
+    # create_infra_ignition()
+    # create_terraform_vars()
+    # prepare_web_path()
+    # set_ip()
+    # run_compose()
+    # wait_for_powerdns()
+    # set_dns()
+    # create_machines()
+    # start_bootstrapper()
 main()
