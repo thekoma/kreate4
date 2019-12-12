@@ -17,7 +17,7 @@ authoritative;
 log-facility local7;
 dhcp-send-hostname;
 subnet {{nodes.network.network}} netmask {{nodes.network.subnet}} {
-  option domain-name-servers {{nodes.network.lb}};
+  option domain-name-servers {{nodes.network.dns}};
   option domain-name "{{nodes.network.cluster}}.{{nodes.network.basedomain}}";
   option routers {{nodes.network.gateway}};
   default-lease-time 600;

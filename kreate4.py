@@ -96,6 +96,7 @@ networks_info           = confs['variable']['network']['default']
 pdns_host               = confs['variable']['pdns']['default'].get('host')
 pdns_url                = "%s/api" % pdns_host
 pdns_key                = confs['variable']['pdns']['default'].get('key')
+dns                     = networks_info.get('dns')
 lb                      = networks_info.get('lb')
 lb_int                  = networks_info.get('lb_int')
 apiintip                = networks_info.get('apiint')
@@ -417,7 +418,7 @@ def set_ip():
     subprocess.run(['sudo', 'nmcli', 'connection', 'up', lb_int])
 
 def set_dns():
-    subprocess.run(['sudo', 'nmcli', 'connection', 'modify', lb_int, 'ipv4.dns', lb ])
+    subprocess.run(['sudo', 'nmcli', 'connection', 'modify', lb_int, 'ipv4.dns', dns])
     subprocess.run(['sudo', 'nmcli', 'connection', 'up', lb_int])
 
 def create_machines():
