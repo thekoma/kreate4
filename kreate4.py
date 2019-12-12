@@ -78,7 +78,7 @@ ocp_client_url          = "%s/openshift-client-linux-%s.tar.gz"  % (ocp_base_url
 ocp_installer_url       = "%s/openshift-install-linux-%s.tar.gz" % (ocp_base_url, ocp_target_version)
 bootstrap_path          = "%s/bootstrap.ign"                     % (ocp_web_path)
 docker_proxy_conf       = "%s/http-proxy.conf"                   % (docker_proxy_dir)
-basedirs                = [bin_dir, configuration_dir, dhcpd_dir] #Tmp dir treated differently.
+basedirs                = [tmp_dir, bin_dir, configuration_dir, dhcpd_dir] #Tmp dir treated differently.
 
 
 for namedir in basedirs:
